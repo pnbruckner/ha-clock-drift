@@ -9,7 +9,7 @@ from subprocess import CalledProcessError, CompletedProcess, PIPE, run
 import time
 from typing import Any
 
-from homeassistant.const import EVENT_HOMEASSISTANT_STARTED, UnitOfTime
+from homeassistant.const import EVENT_HOMEASSISTANT_STARTED, MAJOR_VERSION, MINOR_VERSION, UnitOfTime
 from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
 from homeassistant.helpers.typing import ConfigType
@@ -110,7 +110,10 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             {"available": sources["available"]},
         )
 
-    hass.bus.async_listen(EVENT_HOMEASSISTANT_STARTED, startup, run_immediately=True)
+    if (MAJOR_VERSION, MINOR_VERSION) < (2024, 5):
+        hass.bus.async_listen(EVENT_HOMEASSISTANT_STARTED, startup, run_immediately=True)
+    else:
+        hass.bus.async_listen(EVENT_HOMEASSISTANT_STARTED, startup)
     hass.async_add_executor_job(log_clocksources)
 
     return True
